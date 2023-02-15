@@ -12,11 +12,21 @@ const getAllItems = (req, res) => {
 
 const getItems = (req, res) => {
     try {
-        //TODO: need to add pagination and search
         const { item } = req.params;
+        const { skip, limit, ...search } = req.query;
         const db = getDB();
-        const data = db[item] || []
-        res.status(200).send(data);
+        let items = db[item] || []
+
+        if (Object.keys(search).length)
+            items = items.filter(item => {
+                return Object.keys(search).every(e => search[e] == item[e]);
+            })
+
+
+        if (skip && limit)
+            items = items.slice(skip, limit)
+
+        res.status(200).send(items);
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
@@ -51,12 +61,12 @@ const addItem = (req, res) => {
         const { item } = req.params;
 
         if (!(typeof body === 'object' && body !== null)) {
-            res.status(401).send('Body must be an object');
+            res.status(403).send('Body must be an object');
             return
         }
 
         if (!Object.keys(body).length) {
-            res.status(401).send('Body can not be empty');
+            res.status(403).send('Body can not be empty');
             return
         }
 
