@@ -33,6 +33,7 @@ const updateDB = (_db) => {
 const cleanDB = () => {
     try {
         if (fs.existsSync(path)) fs.unlinkSync(path)
+        db = {}
     } catch (err) {
         console.log(err)
         throw new Error(err)

@@ -1,4 +1,4 @@
-const { getDB, path, updateDB } = require('./helper/db')
+const { getDB, updateDB, cleanDB } = require('./helper/db')
 
 const getAllItems = (req, res) => {
     try {
@@ -61,14 +61,115 @@ const addItem = (req, res) => {
         }
 
         let db = getDB();
-        if (db[item]) {
-            body.id = db[item].length + 1;
-            db[item].push(body)
-        } else {
-            db[item] = [{ id: 1, ...body }];
-        }
+        if (db[item]) body.id = db[item].length + 1;
+        else body['id'] = 1;
+
+        if (db[item]) db[item].push(body)
+        else db[item] = [body];
+
         updateDB(db)
         res.status(201).send(body);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+    }
+}
+
+const deleteItemById = (req, res) => {
+    try {
+        const { item, id } = req.params;
+
+        if (!Number(id)) {
+            res.status(404).send('Item not found');
+            return
+        }
+
+        const db = getDB();
+        const data = db[item].find(dt => dt.id === Number(id))
+        if (!data) {
+            res.status(404).send('Item not found');
+            return
+        }
+        db[item] = db[item].filter(dt => dt.id !== Number(id))
+        updateDB(db)
+
+        res.status(204).send();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+    }
+}
+
+const replaceItemById = (req, res) => {
+    try {
+        const { item, id } = req.params;
+        const body = req.body;
+        delete body.id;
+
+        if (!Number(id)) {
+            res.status(404).send('Item not found');
+            return
+        }
+
+        const db = getDB();
+        const data = db[item].find(dt => dt.id === Number(id))
+        if (!data) {
+            res.status(404).send('Item not found');
+            return
+        }
+
+        const updatedItem = { id: data.id, ...body }
+        db[item] = db[item].map(dt => {
+            if (dt.id === Number(id))
+                return updatedItem;
+            return dt;
+        })
+        updateDB(db)
+
+        res.status(200).send(updatedItem);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+    }
+}
+
+const updateItemById = (req, res) => {
+    try {
+        const { item, id } = req.params;
+        const body = req.body;
+        delete body.id;
+
+        if (!Number(id)) {
+            res.status(404).send('Item not found');
+            return
+        }
+
+        const db = getDB();
+        const data = db[item].find(dt => dt.id === Number(id))
+        if (!data) {
+            res.status(404).send('Item not found');
+            return
+        }
+
+        const updatedItem = { ...data, ...body }
+        db[item] = db[item].map(dt => {
+            if (dt.id === Number(id))
+                return updatedItem;
+            return dt;
+        })
+        updateDB(db)
+
+        res.status(200).send(updatedItem);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+    }
+}
+
+const resetAllItems = (req, res) => {
+    try {
+        cleanDB();
+        res.status(204).send();
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
@@ -80,4 +181,8 @@ module.exports = {
     addItem,
     getItems,
     getItemById,
+    replaceItemById,
+    updateItemById,
+    deleteItemById,
+    resetAllItems,
 }
