@@ -20,6 +20,6 @@ app.use(function (err, req, res, next) {
     res.status(500).send("Oops, something went wrong.")
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is start at port ${PORT}`)
+app.listen(PORT || 3000, () => {
+    console.log(`Server is start at port ${PORT || 3000}`)
 });

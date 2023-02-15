@@ -1,7 +1,7 @@
 const fs = require('fs')
 
 let db = null;
-const path = `${process.env.DB_NAME}.json`
+const path = `${process.env.DB_NAME || 'db'}.json`
 
 const getDB = () => {
     try {
