@@ -1,5 +1,9 @@
 # json-server
- Dummy JSON web api
+Dummy JSON rest api
+ 
+ 
+To start the project:
+ >npm start
 
 Routes
 
